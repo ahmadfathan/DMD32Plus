@@ -3,10 +3,6 @@
  DMD32.h   - Function and support library for the Freetronics DMD, a 512 LED matrix display
            panel arranged in a 32 x 16 layout.
 
-This LIibrary (DMD32) is a fork of original DMD library  was modified to work on ESP32
-Modified by: Khudhur Alfarhan  // Qudoren@gmail.com
-1/Oct./2020
-
  Note that the DMD32 library uses the SPI port for the fastest, low overhead writing to the
  display. Keep an eye on conflicts if there are any other devices running from the same
  SPI port, and that the chip select on those devices is correctly set to be inactive
@@ -34,8 +30,8 @@ LED Panel Layout in RAM
  If not, see <http://www.gnu.org/licenses/>.
 
 --------------------------------------------------------------------------------------*/
-#ifndef DMD_H_
-#define DMD_H_
+#ifndef DMD32_PLUS_H_
+#define DMD32_PLUS_H_
 
 // Arduino toolchain header, version dependent
 #include "Arduino.h"

@@ -3,10 +3,6 @@
  DMD32.cpp - Function and support library for the Freetronics DMD, a 512 LED matrix display
            panel arranged in a 32 x 16 layout.
 
-This LIibrary (DMD32) is a fork of original DMD library  was modified to work on ESP32
-Modified by: Khudhur Alfarhan  // Qudoren@gmail.com
-1/Oct./2020
-
  Note that the DMD library uses the SPI port  (VSPI) for the fastest, low overhead writing to the
  display. Keep an eye on conflicts if there are any other devices running from the same
  SPI port, and that the chip select on those devices is correctly set to be inactive
@@ -25,7 +21,7 @@ Modified by: Khudhur Alfarhan  // Qudoren@gmail.com
  If not, see <http://www.gnu.org/licenses/>.
 
 --------------------------------------------------------------------------------------*/
-#include "DMD32.h"
+#include "DMD32Plus.h"
 
 /*--------------------------------------------------------------------------------------
  Setup and instantiation of DMD library
