@@ -1,0 +1,4 @@
+Version 1
+
+- initial version
+  Fix error from original version of the library https://github.com/Qudor-Engineer/DMD32
