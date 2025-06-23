@@ -39,14 +39,8 @@ DMD::DMD(byte panelsWide, byte panelsHigh)
     row3 = ((DisplaysTotal << 2) * 3) << 2;
     bDMDScreenRAM = (byte *)malloc(DisplaysTotal * DMD_RAM_SIZE_BYTES);
 
-    // SPI.begin();
-    // SPI.setFrequency(4000000L);    
-    // SPI.setDataMode(SPI_MODE0);
-    // SPI.setBitOrder(MSBFIRST);
-
     // initialise instance of the SPIClass attached to vspi
     vspi = new SPIClass(VSPI);
- 
 
     // initialize the SPI port
     vspi->begin(); // initiate VSPI with the default pinsinitiat VSPI with the default pins
@@ -479,7 +473,6 @@ void DMD::scanDisplayBySPI()
     // if PIN_OTHER_SPI_nCS is in use during a DMD scan request then scanDisplayBySPI() will exit without conflict! (and skip that scan)
     if (digitalRead(PIN_OTHER_SPI_nCS) == HIGH)
     {
-        // Serial.println(".");
         // SPI transfer pixels to the display hardware shift registers
         int rowsize = DisplaysTotal << 2;
         int offset = rowsize * bDMDByte;
@@ -491,10 +484,6 @@ void DMD::scanDisplayBySPI()
             vspi->transfer(bDMDScreenRAM[offset + i + row1]);
             vspi->transfer(bDMDScreenRAM[offset + i]);
             vspi->endTransaction();
-            // SPI.write(bDMDScreenRAM[offset + i + row3]);
-            // SPI.write(bDMDScreenRAM[offset + i + row2]);
-            // SPI.write(bDMDScreenRAM[offset + i + row1]);
-            // SPI.write(bDMDScreenRAM[offset + i]);
         }
 
         OE_DMD_ROWS_OFF();
