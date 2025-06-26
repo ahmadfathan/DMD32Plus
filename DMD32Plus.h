@@ -39,6 +39,9 @@ LED Panel Layout in RAM
 // SPI library must be included for the SPI scanning/connection method to the DMD
 #include <SPI.h>
 
+#include "DMDContainer.h"
+#include "constants.h"
+
 // ######################################################################################################################
 // ######################################################################################################################
 #warning CHANGE THESE TO SEMI-ADJUSTABLE PIN DEFS!
@@ -122,14 +125,6 @@ static byte bPixelLookupTable[8] =
         0x01  // 7, bit 0
 };
 
-// Font Indices
-#define FONT_LENGTH 0
-#define FONT_FIXED_WIDTH 2
-#define FONT_HEIGHT 3
-#define FONT_FIRST_CHAR 4
-#define FONT_CHAR_COUNT 5
-#define FONT_WIDTH_TABLE 6
-
 typedef uint8_t (*FontCallback)(const uint8_t *);
 
 // The main class of DMD library functions
@@ -183,6 +178,8 @@ public:
   // Call 4 times to scan the whole display which is made up of 4 interleaved rows within the 16 total rows.
   // Insert the calls to this function into the main loop for the highest call rate, or from a timer interrupt
   void scanDisplayBySPI();
+
+  void drawContainer(DMDContainer *container);
 
 private:
   void drawCircleSub(int cx, int cy, int x, int y, byte bGraphicsMode);

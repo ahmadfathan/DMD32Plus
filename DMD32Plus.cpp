@@ -22,6 +22,7 @@
 
 --------------------------------------------------------------------------------------*/
 #include "DMD32Plus.h"
+#include "utils.h"
 
 /*--------------------------------------------------------------------------------------
  Setup and instantiation of DMD library
@@ -45,19 +46,21 @@ DMD::DMD(byte panelsWide, byte panelsHigh)
     // initialize the SPI port
     vspi->begin(); // initiate VSPI with the default pinsinitiat VSPI with the default pins
 
-    pinMode(PIN_DMD_A, OUTPUT);      //
-    pinMode(PIN_DMD_B, OUTPUT);      //
+    pinMode(PIN_DMD_A, OUTPUT); //
+    pinMode(PIN_DMD_B, OUTPUT); //
     // pinMode(PIN_DMD_CLK, OUTPUT);    //
-    pinMode(PIN_DMD_LAT, OUTPUT);   //
+    pinMode(PIN_DMD_LAT, OUTPUT); //
     // pinMode(PIN_DMD_R_DATA, OUTPUT); //
-    pinMode(PIN_DMD_nOE, OUTPUT);    //
+    pinMode(PIN_DMD_nOE, OUTPUT); //
 
-    digitalWrite(PIN_DMD_A, LOW);       //
-    digitalWrite(PIN_DMD_B, LOW);       //
+    pinMode(PIN_OTHER_SPI_nCS, INPUT);
+
+    digitalWrite(PIN_DMD_A, LOW); //
+    digitalWrite(PIN_DMD_B, LOW); //
     // digitalWrite(PIN_DMD_CLK, LOW);     //
-    digitalWrite(PIN_DMD_LAT, LOW);    //
+    digitalWrite(PIN_DMD_LAT, LOW); //
     // digitalWrite(PIN_DMD_R_DATA, HIGH); //
-    digitalWrite(PIN_DMD_nOE, LOW);     //
+    digitalWrite(PIN_DMD_nOE, LOW); //
 
     clearScreen(true);
 
@@ -591,32 +594,22 @@ int DMD::drawChar(const int bX, const int bY, const unsigned char letter, byte b
 
 int DMD::charWidth(const unsigned char letter)
 {
-    unsigned char c = letter;
-    // Space is often not included in font so use width of 'n'
-    if (c == ' ')
-        c = 'n';
-    uint8_t width = 0;
+    return charWidthOfFont(letter, this->Font);
+}
 
-    uint8_t firstChar = pgm_read_byte(this->Font + FONT_FIRST_CHAR);
-    uint8_t charCount = pgm_read_byte(this->Font + FONT_CHAR_COUNT);
+void DMD::drawContainer(DMDContainer *container)
+{
+    int16_t x0 = container->getX0();
+    int16_t y0 = container->getY0();
+    int16_t w = container->getW();
+    int16_t h = container->getH();
+    uint8_t* buf = container->getBufferData();
 
-    uint16_t index = 0;
-
-    if (c < firstChar || c >= (firstChar + charCount))
+    for (uint16_t i = 0; i < w; i++)
     {
-        return 0;
+        for (uint16_t j = 0; j < h; j++)
+        {
+            writePixel(i + x0 - 1, j + y0, GRAPHICS_NORMAL, buf[j * w + i]);
+        }
     }
-    c -= firstChar;
-
-    if (pgm_read_byte(this->Font + FONT_LENGTH) == 0 && pgm_read_byte(this->Font + FONT_LENGTH + 1) == 0)
-    {
-        // zero length is flag indicating fixed width font (array does not contain width data entries)
-        width = pgm_read_byte(this->Font + FONT_FIXED_WIDTH);
-    }
-    else
-    {
-        // variable width font, read width data
-        width = pgm_read_byte(this->Font + FONT_WIDTH_TABLE + c);
-    }
-    return width;
 }
