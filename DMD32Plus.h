@@ -47,51 +47,16 @@ LED Panel Layout in RAM
 #warning CHANGE THESE TO SEMI-ADJUSTABLE PIN DEFS!
 // ESP32 pins used for the display connection (Using VSPI)
 #define PIN_DMD_nOE 22    // D22 active low Output Enable, setting this low lights all the LEDs in the selected rows. Can pwm it at very high frequency for brightness control.
-#define PIN_DMD_A 16      // D19
-#define PIN_DMD_B 17      // D21
+#define PIN_DMD_A 19      // D19
+#define PIN_DMD_B 21      // D21
 #define PIN_DMD_CLK 18    // D18_SCK  is SPI Clock if SPI is used
-#define PIN_DMD_LAT 21    // D02
+#define PIN_DMD_LAT 2     // D02
 #define PIN_DMD_R_DATA 23 // D23_MOSI is SPI Master Out if SPI is used
 // Define this chip select pin that the Ethernet W5100 IC or other SPI device uses
 // if it is in use during a DMD scan request then scanDisplayBySPI() will exit without conflict! (and skip that scan)
 #define PIN_OTHER_SPI_nCS SS
 // ######################################################################################################################
 // ######################################################################################################################
-
-// DMD I/O pin macros
-#define LIGHT_DMD_ROW_01_05_09_13() \
-  {                                 \
-    digitalWrite(PIN_DMD_B, LOW);   \
-    digitalWrite(PIN_DMD_A, LOW);   \
-  }
-#define LIGHT_DMD_ROW_02_06_10_14() \
-  {                                 \
-    digitalWrite(PIN_DMD_B, LOW);   \
-    digitalWrite(PIN_DMD_A, HIGH);  \
-  }
-#define LIGHT_DMD_ROW_03_07_11_15() \
-  {                                 \
-    digitalWrite(PIN_DMD_B, HIGH);  \
-    digitalWrite(PIN_DMD_A, LOW);   \
-  }
-#define LIGHT_DMD_ROW_04_08_12_16() \
-  {                                 \
-    digitalWrite(PIN_DMD_B, HIGH);  \
-    digitalWrite(PIN_DMD_A, HIGH);  \
-  }
-#define LATCH_DMD_SHIFT_REG_TO_OUTPUT() \
-  {                                     \
-    digitalWrite(PIN_DMD_LAT, HIGH);   \
-    digitalWrite(PIN_DMD_LAT, LOW);    \
-  }
-#define OE_DMD_ROWS_OFF()           \
-  {                                 \
-    digitalWrite(PIN_DMD_nOE, LOW); \
-  }
-#define OE_DMD_ROWS_ON()             \
-  {                                  \
-    digitalWrite(PIN_DMD_nOE, HIGH); \
-  }
 
 // Pixel/graphics writing modes (bGraphicsMode)
 #define GRAPHICS_NORMAL 0
@@ -134,6 +99,10 @@ public:
   // Instantiate the DMD
   DMD(byte panelsWide, byte panelsHigh);
   // virtual ~DMD();
+
+  DMD(
+      byte panelsWide, byte panelsHigh,
+      uint8_t nOEPin, uint8_t aPin, uint8_t bPin, uint8_t clkPin, uint8_t latPin, uint8_t rDataPin);
 
   // Set or clear a pixel at the x and y location (0,0 is the top left corner)
   void writePixel(unsigned int bX, unsigned int bY, byte bGraphicsMode, byte bPixel);
@@ -182,6 +151,11 @@ public:
   void drawContainer(DMDContainer *container);
 
 private:
+  // GPIOs
+  uint8_t _nOEPin, _aPin, _bPin, _clkPin, _latPin, _rDataPin;
+
+  void init(byte panelsWide, byte panelsHigh);
+
   void drawCircleSub(int cx, int cy, int x, int y, byte bGraphicsMode);
 
   // Mirror of DMD pixels in RAM, ready to be clocked out by the main loop or high speed timer calls
@@ -210,6 +184,46 @@ private:
   // uninitalised pointer to SPI object
   SPIClass *vspi = NULL;
   static const int spiClk = 4000000; // 4 MHz SPI clock
+
+  void lightRow_01_05_09_13()
+  {
+    digitalWrite(_aPin, LOW);
+    digitalWrite(_bPin, LOW);
+  }
+
+  void lightRow_02_06_10_14()
+  {
+    digitalWrite(_aPin, HIGH);
+    digitalWrite(_bPin, LOW);
+  }
+
+  void lightRow_03_07_11_15()
+  {
+    digitalWrite(_aPin, LOW);
+    digitalWrite(_bPin, HIGH);
+  }
+
+  void lightRow_04_08_12_16()
+  {
+    digitalWrite(_aPin, HIGH);
+    digitalWrite(_bPin, HIGH);
+  }
+
+  void latchShiftRegToOutput()
+  {
+    digitalWrite(_latPin, HIGH);
+    digitalWrite(_latPin, LOW);
+  }
+
+  void oeRowsOff()
+  {
+    digitalWrite(_nOEPin, LOW);
+  }
+
+  void oeRowsOn()
+  {
+    digitalWrite(_nOEPin, HIGH);
+  }
 };
 
 #endif /* DMD_H_ */
