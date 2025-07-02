@@ -31,6 +31,34 @@
 --------------------------------------------------------------------------------------*/
 DMD::DMD(byte panelsWide, byte panelsHigh)
 {
+    _aPin = PIN_DMD_A;
+    _bPin = PIN_DMD_B;
+    _latPin = PIN_DMD_LAT;
+    _nOEPin = PIN_DMD_nOE;
+
+    _clkPin = PIN_DMD_CLK;
+    _rDataPin = PIN_DMD_R_DATA;
+
+    init(panelsWide, panelsHigh);
+}
+
+DMD::DMD(
+    byte panelsWide, byte panelsHigh, 
+    uint8_t nOEPin, uint8_t aPin, uint8_t bPin, uint8_t clkPin, uint8_t latPin, uint8_t rDataPin
+) {
+    _aPin = aPin;
+    _bPin = bPin;
+    _latPin = latPin;
+    _nOEPin = nOEPin;
+
+    _clkPin = clkPin;
+    _rDataPin = rDataPin;
+
+    init(panelsWide, panelsHigh);
+}
+
+void DMD::init(byte panelsWide, byte panelsHigh)
+{
     uint16_t ui;
     DisplaysWide = panelsWide;
     DisplaysHigh = panelsHigh;
@@ -38,29 +66,26 @@ DMD::DMD(byte panelsWide, byte panelsHigh)
     row1 = DisplaysTotal << 4;
     row2 = DisplaysTotal << 5;
     row3 = ((DisplaysTotal << 2) * 3) << 2;
-    bDMDScreenRAM = (byte *)malloc(DisplaysTotal * DMD_RAM_SIZE_BYTES);
+    bDMDScreenRAM = (byte *)malloc(DisplaysTotal * DMD_RAM_SIZE_BYTES);   
 
     // initialise instance of the SPIClass attached to vspi
     vspi = new SPIClass(VSPI);
 
     // initialize the SPI port
-    vspi->begin(); // initiate VSPI with the default pinsinitiat VSPI with the default pins
+    vspi->begin(_clkPin, -1, _rDataPin, -1);
 
-    pinMode(PIN_DMD_A, OUTPUT); //
-    pinMode(PIN_DMD_B, OUTPUT); //
-    // pinMode(PIN_DMD_CLK, OUTPUT);    //
-    pinMode(PIN_DMD_LAT, OUTPUT); //
-    // pinMode(PIN_DMD_R_DATA, OUTPUT); //
-    pinMode(PIN_DMD_nOE, OUTPUT); //
-
+    // setup pin mode
+    pinMode(_aPin, OUTPUT);
+    pinMode(_bPin, OUTPUT);
+    pinMode(_latPin, OUTPUT); 
+    pinMode(_nOEPin, OUTPUT);
     pinMode(PIN_OTHER_SPI_nCS, INPUT);
 
-    digitalWrite(PIN_DMD_A, LOW); //
-    digitalWrite(PIN_DMD_B, LOW); //
-    // digitalWrite(PIN_DMD_CLK, LOW);     //
-    digitalWrite(PIN_DMD_LAT, LOW); //
-    // digitalWrite(PIN_DMD_R_DATA, HIGH); //
-    digitalWrite(PIN_DMD_nOE, LOW); //
+    // initial GPIO state
+    digitalWrite(_aPin, LOW);
+    digitalWrite(_bPin, LOW);
+    digitalWrite(_latPin, LOW);
+    digitalWrite(_nOEPin, LOW); 
 
     clearScreen(true);
 
@@ -489,28 +514,28 @@ void DMD::scanDisplayBySPI()
             vspi->endTransaction();
         }
 
-        OE_DMD_ROWS_OFF();
-        LATCH_DMD_SHIFT_REG_TO_OUTPUT();
+        oeRowsOff();
+        latchShiftRegToOutput();
         switch (bDMDByte)
         {
         case 0: // row 1, 5, 9, 13 were clocked out
-            LIGHT_DMD_ROW_01_05_09_13();
+            lightRow_01_05_09_13();
             bDMDByte = 1;
             break;
         case 1: // row 2, 6, 10, 14 were clocked out
-            LIGHT_DMD_ROW_02_06_10_14();
+            lightRow_02_06_10_14();
             bDMDByte = 2;
             break;
         case 2: // row 3, 7, 11, 15 were clocked out
-            LIGHT_DMD_ROW_03_07_11_15();
+            lightRow_03_07_11_15();
             bDMDByte = 3;
             break;
         case 3: // row 4, 8, 12, 16 were clocked out
-            LIGHT_DMD_ROW_04_08_12_16();
+            lightRow_04_08_12_16();
             bDMDByte = 0;
             break;
         }
-        OE_DMD_ROWS_ON();
+        oeRowsOn();
     }
 }
 
